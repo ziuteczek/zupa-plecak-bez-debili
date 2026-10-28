@@ -1,73 +1,37 @@
-const TICKET_STATUSES = new Set(['new', 'doing', 'done']);
-const TICKET_PRIORITIES = new Set(['low', 'normal', 'high']);
-const MAX_TICKETS = 1000;
+const STATUSES = ['new', 'doing', 'done'];
+const PRIORITIES = ['low', 'normal', 'high'];
 
-function throwTicketError(message) {
-    if (typeof globalThis.alert === 'function') {
-        globalThis.alert(message);
+function addTicket(tickets, id, title, priority) {
+    title = title.trim();
+    if (tickets.length >= 1000) {
+        throw new Error('Maksymalnie 1000 zgłoszeń.');
     }
-    throw new Error(message);
-}
-
-function assertTickets(tickets) {
-    if (!Array.isArray(tickets)) {
-        throwTicketError('Zgłoszenia muszą być tablicą.');
+    if (id.trim() === '' || id.length > 100) {
+        throw new Error('Złe ID.');
     }
-}
-
-function addTicket(tickets, ticket) {
-    assertTickets(tickets);
-
-    if (tickets.length >= MAX_TICKETS) {
-        throwTicketError('Można dodać maksymalnie 1000 zgłoszeń.');
+    if (tickets.some((t) => t.id === id)) {
+        throw new Error('ID musi być unikatowe.');
     }
-    if (!ticket || typeof ticket !== 'object' || Array.isArray(ticket)) {
-        throwTicketError('Zgłoszenie musi być obiektem.');
+    if (title.length < 3 || title.length > 80) {
+        throw new Error('Tytuł musi mieć 3–80 znaków.');
     }
-
-    const { id, title, priority } = ticket;
-    if (typeof id !== 'string' || id.trim().length === 0 || id.length > 100) {
-        throwTicketError('ID zgłoszenia musi być niepustym tekstem o długości do 100 znaków.');
+    if (!PRIORITIES.includes(priority)) {
+        throw new Error('Zły priorytet.');
     }
-    if (tickets.some((existingTicket) => existingTicket.id === id)) {
-        throwTicketError('ID zgłoszenia musi być unikatowe.');
-    }
-    if (typeof title !== 'string') {
-        throwTicketError('Tytuł zgłoszenia musi być tekstem.');
-    }
-
-    const trimmedTitle = title.trim();
-    if (trimmedTitle.length < 3 || trimmedTitle.length > 80) {
-        throwTicketError('Tytuł zgłoszenia musi mieć od 3 do 80 znaków.');
-    }
-    if (!TICKET_PRIORITIES.has(priority)) {
-        throwTicketError('Priorytet zgłoszenia musi mieć wartość: niski, normalny lub wysoki.');
-    }
-
-    return [...tickets, {
-        id,
-        title: trimmedTitle,
-        status: 'new',
-        priority
-    }];
+    return [...tickets, { id, title, status: 'new', priority }];
 }
 
 function changeStatus(tickets, id, status) {
-    assertTickets(tickets);
-
-    if (typeof id !== 'string' || id.trim().length === 0 || id.length > 100) {
-        throwTicketError('ID zgłoszenia musi być niepustym tekstem o długości do 100 znaków.');
+    if (!STATUSES.includes(status)) {
+        throw new Error('Zły status.');
     }
-    if (!TICKET_STATUSES.has(status)) {
-        throwTicketError('Status zgłoszenia musi mieć wartość: nowe, w trakcie lub zakończone.');
+    if (!tickets.some((t) => t.id === id)) {
+        throw new Error('Nie ma takiego zgłoszenia.');
     }
-
-    const ticketIndex = tickets.findIndex((ticket) => ticket.id === id);
-    if (ticketIndex === -1) {
-        throwTicketError('Nie znaleziono zgłoszenia.');
-    }
-
-    return tickets.map((ticket) => (
-        ticket.id === id ? { ...ticket, status } : ticket
-    ));
+    return tickets.map((t) => {
+        if (t.id === id) {
+            return { ...t, status };
+        }
+        return t;
+    });
 }
