@@ -7,6 +7,23 @@
     <script src="script.js" defer></script>
 </head>
 <body>
-    
+    <form onsubmit="">
+        <label for="title">Tytul: </label>
+        <input type="text" name="title"> <br>
+        <label for="status">Status: </label>
+        <select name="status">
+            <option value="new">New</option>
+            <option value="doing">Doing</option>
+            <option value="done">Done</option>
+        </select>
+        <label for="priorytet">Priorytet: </label>
+        <select name="priorytet">
+            <option value="low">Low</option> 
+            <option value="normal">Normal</option>
+            <option value="high">High</option>  
+        </select>
+        <br>
+        <input type="submit" style="display: none" />
+    </form>
 </body>
 </html>
