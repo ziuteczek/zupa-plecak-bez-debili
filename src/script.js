@@ -1,6 +1,5 @@
-const TICKET_STATUSES = new Set(['new', 'doing', 'done']);
-const TICKET_PRIORITIES = new Set(['low', 'normal', 'high']);
-const MAX_TICKETS = 1000;
+const STATUSES = ['new', 'doing', 'done'];
+const PRIORITIES = ['low', 'normal', 'high'];
 
 function throwTicketError(message) {
     if (typeof globalThis.alert === 'function') {
