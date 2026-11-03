@@ -1,5 +1,8 @@
 const STATUSES = ['new', 'doing', 'done'];
 const PRIORITIES = ['low', 'normal', 'high'];
+const TICKET_STATUSES = new Set(STATUSES);
+const TICKET_PRIORITIES = new Set(PRIORITIES);
+const MAX_TICKETS = 1000;
 
 function throwTicketError(message) {
     if (typeof globalThis.alert === 'function') {
@@ -81,6 +84,7 @@ const filterSelect = document.querySelector('#filter');
 const list = document.querySelector('#list');
 const counter = document.querySelector('#counter');
 const message = document.querySelector('#message');
+const empty = document.querySelector('#empty');
 
 function createTicketRow(ticket) {
     const li = document.createElement('li');
@@ -94,9 +98,14 @@ function createTicketRow(ticket) {
         select.append(option);
     }
     select.value = ticket.status;
+    select.setAttribute('aria-label', 'Status zgłoszenia ' + ticket.title);
     select.addEventListener('change', () => {
-        tickets = changeStatus(tickets, ticket.id, select.value);
-        message.textContent = 'Zmieniono status.';
+        try {
+            tickets = changeStatus(tickets, ticket.id, select.value);
+            message.textContent = 'Zmieniono status na ' + select.value + '.';
+        } catch (error) {
+            message.textContent = error.message;
+        }
         render();
         filterSelect.focus();
     });
@@ -109,16 +118,18 @@ function render() {
     const visible = tickets.filter((t) => filter === 'all' || t.status === filter);
     list.replaceChildren(...visible.map(createTicketRow));
     counter.textContent = visible.length + '/' + tickets.length;
-    if (visible.length === 0) {
-        message.textContent = 'Brak zgłoszeń.';
-    }
+    empty.hidden = visible.length > 0;
 }
 
 form.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = new FormData(form);
     try {
-        tickets = addTicket(tickets, String(nextId), String(data.get('title')), String(data.get('priority')));
+        tickets = addTicket(tickets, {
+            id: String(nextId),
+            title: String(data.get('title')),
+            priority: String(data.get('priority'))
+        });
         nextId++;
         titleInput.value = '';
         message.textContent = 'Dodano zgłoszenie.';
